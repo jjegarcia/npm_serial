@@ -22,8 +22,8 @@ const byteParser = new SerialPort.parsers.ByteLength({ length: 1 })
 port.pipe(byteParser)
 
 // Values to send over to Arduino.
-const HIGH = Buffer.from([1])
-const LOW = Buffer.from([0])
+const HIGH = Buffer.from([1]) //HIGH=[1]
+const LOW = Buffer.from([0]) //LOW=[0]
 
 /* ===========================================
 *
@@ -35,6 +35,10 @@ app.get('/', (req, res) => {
   res.sendfile('index.html')
 })
 
+app.post('/po',(req => {
+  console.log('--->po')
+}))
+
 http.listen(tcpPort, () => {
   console.log(`listening on http://localhost:${tcpPort}`)
 })
@@ -45,27 +49,27 @@ http.listen(tcpPort, () => {
 *
 =========================================== */
 
-io.on('connection', socket => {
-  console.log('a user connected')
-
-  /**
-   * Socket listener to determine whether or not to send HIGH / LOW
-   * values to Arduino.
-   */
-  socket.on('message', msg => {
-    console.log('Message received: ', msg)
-    switch (msg) {
-      case 'on':
-        port.write(HIGH)
-        break
-      case 'off':
-        port.write(LOW)
-        break
-      default:
-        break
-    }
-  })
-})
+// io.on('connection', socket => {
+//   console.log('a user connected')
+//
+//   /**
+//    * Socket listener to determine whether or not to send HIGH / LOW
+//    * values to Arduino.
+//    */
+//   socket.on('message', msg => {
+//     console.log('Message received: ', msg)
+//     switch (msg) {
+//       case 'on':
+//         port.write(HIGH)
+//         break
+//       case 'off':
+//         port.write(LOW)
+//         break
+//       default:
+//         break
+//     }
+//   })
+// })
 
 /* ===========================================
 *
@@ -83,13 +87,14 @@ port.on('open', () => {
 byteParser.on('data', data => {
   let message
 
-  if (HIGH.compare(data) === 0) {
-    message = 'LED successfully turned on.'
-  } else if (LOW.compare(data) === 0) {
-    message = 'LED successfully turned off.'
-  } else {
-    message = 'LED did not behave as expected.'
-  }
+  // if (HIGH.compare(data) === 0) {
+  //   message = 'LED successfully turned on.'
+  // } else if (LOW.compare(data) === 0) {
+  //   message = 'LED successfully turned off.'
+  // } else {
+  //   message = 'LED did not behave as expected.'
+  // }
+  message= data;
 
   io.sockets.emit('new message', message)
 })

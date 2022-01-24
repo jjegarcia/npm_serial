@@ -1,58 +1,86 @@
 <!DOCTYPE html>
 <html>
-  <head>
+<head>
     <meta charset="UTF-8">
-    <title>Hello World!</title>
-  </head>
-  <body>
-    <h1>Hello World!</h1>
+    <title>Link Serial</title>
+</head>
+<body>
+<h1>Link Serial</h1>
 
-    <ul id="messages"></ul>
+<ul id="messages"></ul>
 
-    <div id="actions">
-      <button id="turnOnLed" type="button">Turn On LED</button>
-      <button id="turnOffLed" type="button">Turn Off LED</button>
+<!--    <div id="actions">-->
+<!--      <button id="turnOnLed" type="button">Turn On LED</button>-->
+<!--      <button id="turnOffLed" type="button">Turn Off LED</button>-->
+<!--    </div>-->
+<!--<form action="/signup" method="post" id="signup">-->
+<!--    <input type="text" id="fname" value="Mike"><br><br>-->
+<!--    <input type="submit" value="Submit">-->
+<!--</form>-->
+
+<form action="/po" method="post" id="signup">
+    <h1>Sign Up</h1>
+    <div class="field">
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" placeholder="Enter your fullname" />
+        <small></small>
     </div>
+    <div class="field">
+        <label for="email">Email:</label>
+        <input type="text" id="email" name="email" placeholder="Enter your email address" />
+        <small></small>
+    </div>
+    <button type="submit">Subscribe</button>
+</form>
 
-  </body>
+</body>
 
-  <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
-  <script src="/socket.io/socket.io.js"></script>
-  <script type="text/javascript">
-    $(function() {
-      // Initialize Variables
-      const socket = io();
+<script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+<script type="text/javascript">
+    $(function () {
 
-      const $messages = $('#messages');
-      const $turnOffLed = $('#turnOffLed');
-      const $turnOnLed = $('#turnOnLed');
+        // Initialize Variables
+        const socket = io();
 
-      // Socket.io listeners
-      socket.on('new message', (msg) => {
-        displayMessage(msg);
-      });
+        const $form  = document.getElementById('signup');
+        // const $form = $('#signup');
+        const $messages = $('#messages');
+        // const $turnOffLed = $('#turnOffLed');
+        // const $turnOnLed = $('#turnOnLed');
 
-      socket.on('close', () => {
-        displayMessage('Lost connection to device.');
-      });
+        $form.addEventListener('submit', (event) => {
+            console.log('form submitted');
+            // displayMessage('form submitted')
+        });
 
-      // Browser Event Listeners
-      $turnOffLed.click(() => {
-        sendData('off');
-      });
+        // Socket.io listeners
+        socket.on('new message', (msg) => {
+            displayMessage(msg);
+        });
 
-      $turnOnLed.click(() => {
-        sendData('on');
-      });
+        socket.on('close', () => {
+            displayMessage('Lost connection to device.');
+        });
 
-      // Functions
-      function sendData(data) {
-        socket.send(data);
-      }
 
-      function displayMessage(msg) {
-        $messages.append($('<li>').text(msg));
-      }
+        // // Browser Event Listeners
+        // $turnOffLed.click(() => {
+        //   sendData('off');
+        // });
+        //
+        // $turnOnLed.click(() => {
+        //   sendData('on');
+        // });
+
+        // Functions
+        function sendData(data) {
+            socket.send(data);
+        }
+
+        function displayMessage(msg) {
+            $messages.append($('<li>').text(msg));
+        }
     });
-  </script>
+</script>
 </html>
