@@ -7,18 +7,19 @@
  */
 
 // Initialize application constants
+const bodyParser = require("body-parser")
 const app = require('express')()
 const http = require('http').Server(app)
 const io = require('socket.io')(http)
 const tcpPort = process.env.PORT || 3000
-
+app.use(bodyParser.urlencoded({extended: true}));
 const SerialPort = require('serialport')
 
 const port = new SerialPort('/dev/tty.usbmodem02691', {
-  baudRate: 9600,
+    baudRate: 9600,
 })
 
-const byteParser = new SerialPort.parsers.ByteLength({ length: 1 })
+const byteParser = new SerialPort.parsers.ByteLength({length: 1})
 port.pipe(byteParser)
 
 // Values to send over to Arduino.
@@ -32,15 +33,16 @@ const LOW = Buffer.from([0]) //LOW=[0]
 =========================================== */
 
 app.get('/', (req, res) => {
-  res.sendfile('index.html')
+    res.sendfile('index.html')
 })
 
-app.post('/po',(req => {
-  console.log('--->po')
-}))
+app.post('/po', (req, res) => {
+    console.log('--->po: ${req.body.cha}')
+    res.send(req.body.cha)
+})
 
 http.listen(tcpPort, () => {
-  console.log(`listening on http://localhost:${tcpPort}`)
+    console.log(`listening on http://localhost:${tcpPort}`)
 })
 
 /* ===========================================
@@ -78,28 +80,28 @@ http.listen(tcpPort, () => {
 =========================================== */
 
 port.on('open', () => {
-  console.log('Port is open!')
+    console.log('Port is open!')
 })
 
 /**
  * listen to the bytes as they are parsed from the parser.
  */
 byteParser.on('data', data => {
-  let message
+    let message
 
-  // if (HIGH.compare(data) === 0) {
-  //   message = 'LED successfully turned on.'
-  // } else if (LOW.compare(data) === 0) {
-  //   message = 'LED successfully turned off.'
-  // } else {
-  //   message = 'LED did not behave as expected.'
-  // }
-  message= data;
+    // if (HIGH.compare(data) === 0) {
+    //   message = 'LED successfully turned on.'
+    // } else if (LOW.compare(data) === 0) {
+    //   message = 'LED successfully turned off.'
+    // } else {
+    //   message = 'LED did not behave as expected.'
+    // }
+    message = data;
 
-  io.sockets.emit('new message', message)
+    io.sockets.emit('new message', message)
 })
 
 port.on('close', () => {
-  console.log('Serial port disconnected.')
-  io.sockets.emit('close')
+    console.log('Serial port disconnected.')
+    io.sockets.emit('close')
 })
