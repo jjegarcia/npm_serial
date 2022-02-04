@@ -61,6 +61,7 @@ port.on('open', () => {
 
 parser.on('data', data => {
     console.log('==>' + data)
+    io.sockets.emit('new message', data)
 })
 
 port.on('close', () => {
