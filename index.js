@@ -1,29 +1,18 @@
 /* eslint-disable node/no-missing-require */
 
-/**
- * This is a small example app to turn off and on
- * the built-in LED of an arduino by data sent
- * from the browser with socket.io.
- */
-
 // Initialize application constants
 const app = require('express')()
 const http = require('http').Server(app)
 const io = require('socket.io')(http)
 const tcpPort = process.env.PORT || 3000
-
 const SerialPort = require('serialport')
+const Readline = SerialPort.parsers.Readline
 
 const port = new SerialPort('/dev/tty.usbmodem02691', {
-  baudRate: 9600,
+    baudRate: 9600,
 })
-
-const byteParser = new SerialPort.parsers.ByteLength({ length: 1 })
-port.pipe(byteParser)
-
-// Values to send over to Arduino.
-const HIGH = Buffer.from([1])
-const LOW = Buffer.from([0])
+const parser = new Readline()
+port.pipe(parser)
 
 /* ===========================================
 *
@@ -32,11 +21,11 @@ const LOW = Buffer.from([0])
 =========================================== */
 
 app.get('/', (req, res) => {
-  res.sendfile('index.html')
+    res.sendfile('index.html')
 })
 
 http.listen(tcpPort, () => {
-  console.log(`listening on http://localhost:${tcpPort}`)
+    console.log(`listening on http://localhost:${tcpPort}`)
 })
 
 /* ===========================================
@@ -44,29 +33,22 @@ http.listen(tcpPort, () => {
 *  Socket.io stuff
 *
 =========================================== */
-
 io.on('connection', socket => {
-  console.log('a user connected')
-
-  /**
-   * Socket listener to determine whether or not to send HIGH / LOW
-   * values to Arduino.
-   */
-  socket.on('message', msg => {
-    console.log('Message received: ', msg)
-    switch (msg) {
-      case 'on':
-        port.write(HIGH)
-        break
-      case 'off':
-        port.write(LOW)
-        break
-      default:
-        break
-    }
-  })
+    console.log('a user connected')
+    socket.on('message', msg => {
+        console.log('UI received: ', msg)
+        switch (msg) {
+            case 'on':
+                port.write('HIGH\n')
+                break
+            case 'off':
+                port.write('LOW\n')
+                break
+            default:
+                break
+        }
+    })
 })
-
 /* ===========================================
 *
 * Serialport stuff
@@ -74,27 +56,15 @@ io.on('connection', socket => {
 =========================================== */
 
 port.on('open', () => {
-  console.log('Port is open!')
+    console.log('Port is open!')
 })
 
-/**
- * listen to the bytes as they are parsed from the parser.
- */
-byteParser.on('data', data => {
-  let message
-
-  if (HIGH.compare(data) === 0) {
-    message = 'LED successfully turned on.'
-  } else if (LOW.compare(data) === 0) {
-    message = 'LED successfully turned off.'
-  } else {
-    message = 'LED did not behave as expected.'
-  }
-
-  io.sockets.emit('new message', message)
+parser.on('data', data => {
+    console.log('==>' + data)
+    io.sockets.emit('new message', data)
 })
 
 port.on('close', () => {
-  console.log('Serial port disconnected.')
-  io.sockets.emit('close')
+    console.log('Serial port disconnected.')
+    io.sockets.emit('close')
 })
